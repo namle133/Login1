@@ -10,6 +10,6 @@ type IUser interface {
 	CreateUser(c context.Context, u *domain.UserInit) error
 	SignIn(c context.Context, u *domain.UserInit) (*domain.Claims, error)
 	UserAdmin() error
-	CheckRowToken(c context.Context) error
-	LogOut(c context.Context) error
+	CheckUserAdmin(c context.Context, token string) error
+	LogOut(c context.Context, token string) error
 }

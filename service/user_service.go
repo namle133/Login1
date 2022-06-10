@@ -17,16 +17,6 @@ type UserService struct {
 
 var jwtKey = []byte("my-secrect-key")
 
-var user string
-
-func AddUser(s string) {
-	user = s
-}
-
-func GetUser() string {
-	return user
-}
-
 func hash(s string) []byte {
 	bsp, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.DefaultCost)
 	if err != nil {
@@ -69,7 +59,6 @@ func (us *UserService) SignIn(c context.Context, ui *domain.UserInit) (*domain.C
 	if failed != nil {
 		return nil, failed
 	}
-	AddUser(claims.Username)
 	return claims, nil
 }
 
@@ -101,22 +90,30 @@ func (us *UserService) UserAdmin() error {
 	if err != nil {
 		return err
 	}
+	u1 := domain.UserInit{Username: "Nam", Password: "nam", Email: "nam@gmail.com"}
+	uh1 := &domain.User{Username: u1.Username, Password: hash(u1.Password), Email: u1.Email}
+	us.Db.Create(uh1)
 	return nil
 }
 
-func (us *UserService) CheckRowToken(c context.Context) error {
+func (us *UserService) CheckUserAdmin(c context.Context, token string) error {
 	var t *domain.Token
-	rToken := us.Db.Find(&t).RowsAffected
-	if rToken < 1 {
+	err := us.Db.First(&t, "token_string = ?", token).Error
+	if err != nil {
+		return err
+	}
+	if t.Username != "admin" {
 		return fmt.Errorf("Cannot create user")
 	}
 	return nil
 }
 
-func (us *UserService) LogOut(c context.Context) error {
-	s := GetUser()
+func (us *UserService) LogOut(c context.Context, token string) error {
 	var t *domain.Token
-	err := us.Db.Where("username=?", s).Delete(&t).Error
+	if token == "" {
+		return fmt.Errorf("No token")
+	}
+	err := us.Db.Where("token_string = ?", token).Delete(&t).Error
 	if err != nil {
 		return err
 	}

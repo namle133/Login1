@@ -31,7 +31,7 @@ func main() {
 	var i service.IUser = us
 	err := us.UserAdmin()
 	if err != nil {
-		fmt.Sprintf("can't create useradmin with err: %v", err)
+		fmt.Errorf("can't create useradmin with err: %v", err)
 		return
 	}
 
@@ -46,7 +46,9 @@ func main() {
 	})
 
 	r.POST("/createuser", func(c *gin.Context) {
-		err := i.CheckRowToken(c)
+		//Authorization Bearer Token
+		token := c.GetHeader("Authorization")[7:]
+		err := i.CheckUserAdmin(c, token)
 		if err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("err: %v", err))
 			return
@@ -61,7 +63,9 @@ func main() {
 	})
 
 	r.DELETE("/logout", func(c *gin.Context) {
-		err := i.LogOut(c)
+		//Authorization Bearer Token
+		token := c.GetHeader("Authorization")[7:]
+		err := i.LogOut(c, token)
 		if err != nil {
 			c.String(http.StatusBadRequest, "LogOut Failed")
 			return
