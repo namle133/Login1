@@ -90,9 +90,6 @@ func (us *UserService) UserAdmin() error {
 	if err != nil {
 		return err
 	}
-	u1 := domain.UserInit{Username: "Nam", Password: "nam", Email: "nam@gmail.com"}
-	uh1 := &domain.User{Username: u1.Username, Password: hash(u1.Password), Email: u1.Email}
-	us.Db.Create(uh1)
 	return nil
 }
 
